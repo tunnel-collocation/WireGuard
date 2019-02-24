@@ -389,7 +389,10 @@ void wg_packet_send_staged_packets(struct wg_peer *peer)
 	 * handshake.
 	 */
 	skb_queue_walk(&packets, skb) {
-		PACKET_CB(skb)->ds = ip_tunnel_ecn_encap(ip_tunnel_get_dsfield(ip_hdr(skb), skb), ip_hdr(skb), skb);
+		PACKET_CB(skb)->ds = ip_tunnel_get_dsfield(ip_hdr(skb), skb);
+		if(!peer->is_ecn_aware) {
+			PACKET_CB(skb)->ds &= ~INET_ECN_MASK;
+		}
 		PACKET_CB(skb)->nonce =
 				atomic64_inc_return(&key->counter.counter) - 1;
 		if (unlikely(PACKET_CB(skb)->nonce >= REJECT_AFTER_MESSAGES))
